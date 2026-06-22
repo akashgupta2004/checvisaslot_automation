@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="css/bootstrap-4.6.1.css">
+        <link rel="stylesheet" href="css/popup.css">
+        <title>Check Visa Slots Plugin</title>
+        <style>.no-popup-show {display: none !important;}</style>
+
+    </head>
+    <body class="from-page" style="margin: auto;">
+        <section class="container">
+            <div class="main-view no-border shadow-lg p-3 bg-white rounded">
+                <div class="row text-center justify-content-center">
+                    <div class="col col-9 header">
+                        <div class="row">
+                            <div class="col col-2">
+                                <a href="https://checkvisaslots.com" rel='noreferrer' target="_blank"><img src="img/header.png" class="logo" alt="header" width="215"></a>
+                            </div>
+                            <div class="col col-10 text-right">
+                                <a href="https://checkvisaslots.com" rel='noreferrer' target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="16" fill="currentColor" class="bi bi-link-45deg" viewBox="0 0 16 16"><path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/><path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/></svg></a>
+                                <a href="https://twitter.com/checkvisaslots" rel='noreferrer' target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="16" fill="currentColor" color="#1DA1F2" class="bi bi-twitter" viewBox="0 0 16 16"><path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/></svg></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row text-center justify-content-center">
+                    <div class="col col-12 register">
+                        <label for="apiKey" title="Register on CheckVisaSlots.com">Your Access Code</label>
+                        <input type="text" id="apiKey" title="Registered on CheckVisaSlots.com" minlength="6" maxlength="6" size="6" required pattern="[0-9A-Za-z]{6}">
+
+                        <button class="button" type="submit" id="submit" style="display: inline;" title="submit">✔</button>
+                        <button class="button button-dull" type="submit" id="edit" style="display: none;" title="Change Access Code">✎</button>
+                    </div>
+                </div>
+                <div class="row text-center justify-content-center">
+                    <div class="col col-12">
+                       <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" checked disabled>
+                            <label class="form-check-label" style="font-size:12px">I agree the <a href="https://checkvisaslots.com/terms/" rel='noreferrer' target="_blank">terms and conditions</a></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="section-server-alert">
+            <div class="container">
+                <div class="row text-center justify-content-center">
+                    <div class="col col-12">
+                        <span class="alert alert-danger d-inline-block" id="server_msg"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="section-slots-info">
+            <div class="container">
+                <div class="row text-center justify-content-center">
+                     <div class="col col-6">
+                        <a class="pt-button" id="redirect_link" href="" rel='noreferrer' target="_blank"><b>Last Availability</b></a>
+                    </div>
+                </div>
+                <div class="row text-center justify-content-center">
+                    <div class="col col-12">
+                        <span class="alert alert-success d-inline-block" id="tip_msg"></span>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="shadow-lg p-1 bg-white rounded">
+                        <div class="col col-12">
+                            Latest <strong id="visa-info"> </strong> Availability&nbsp;&nbsp;<a class="refresh-slots" title="Refresh the slots info">🔄</a>
+                            <div id="slots-info"></div>
+                            <div class="text-right" id="refreshed-info" style="color: blue"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="tile-2-invalid mt-3">
+            <div class="container">
+                <div class="row">
+                    <div class="col col-12">
+                        <div class="shadow-lg p-3 bg-white rounded">
+                            <div class="suggest-signup form-inline justify-content-center">
+                                Need Access Code? <a href="https://checkvisaslots.com/sign-up/" rel='noreferrer' target="_blank" class="btn btn-primary">Signup</a>
+                            </div>
+                            <div class="justify-content-center d-none" id="extension_usage_helper">
+                                Now, go to any website and click the extension icon to see the slots info.
+                                <div class="text-center mt-3">
+                                    <b>Tips:</b>
+                                </div>
+                                >>> <a href="https://checkvisaslots.com/img/how-to-pin-extension.png" rel='noreferrer' target="_blank">Pin the extension</a> to your browser toolbar for easy access. <br><br>
+                                >>> Go to <span><a href="https://www.usvisascheduling.com/en-US/" rel='noreferrer' target="_blank">US Visa Portal Login</a></span>, the extension will pop up automatically with the latest slots info from the checkvisaslots.com users. Based on the slots info, you can decide whether to login or not.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="section-slots-info tile-3">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col col-12">
+                        <div class="shadow-lg p-3 bg-white rounded">
+                            <strong>Intelligent Ways to use the above data</strong>
+                                <table class="table table-bordered table-hover">
+                                    <thead><tr><th>Checked</th>
+                                        <th title="No. of Dates with slots availability">Dates#</th>
+                                        <th title="US Visa Portal Login or NOT?">What to do</th>
+                                    </tr></thead>
+                                    <tbody><tr>
+                                        <td>&lt; 2 minutes</td>
+                                        <td>&lt;=1 </td>
+                                        <td title="The user could have booked that one (or 2) slot(s)">You <b style="background-color: yellow">might</b> find a slot</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&lt; 2 minutes</td>
+                                        <td>&gt; 10</td>
+                                        <td title="Login to Visa Portal & Book it!!"><b style="background-color: #0080005e">High chance</b> of slot available 😍 <a href="https://www.usvisascheduling.com/en-US/" rel='noreferrer' target="_blank">BOOK IT</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&gt; 2 minutes</td>
+                                        <td>&lt; 10</td>
+                                        <td title="Unless more than 30 these might be gone already">Very <b style="background-color: #f6575766">little chance</b> of availability</td>
+                                    </tr>
+                                    <tr>
+                                        <td>&gt; 3 minutes</td>
+                                        <td>0</td>
+                                        <td title="Its been some time now; LOGIN to Visa Portal"><b style="background-color: #e15fed9c">Try your luck</b>. <a href="https://www.usvisascheduling.com/en-US/" rel='noreferrer' target="_blank">LOGIN</a>. Good Luck 🤞</td>
+                                    </tr>
+                                    </tbody></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="container no-popup-show">
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="shadow-lg p-3 bg-white rounded">
+                        <div class="row text-center">
+                            <div class="col-12 text-uppercase">
+                                <h5 style="background: #ffac81" class="p-2">&#9881; Auto login Settings &#9881;</h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="custom-control custom-switch" title="Autologin options">
+                                    <input type="checkbox" class="custom-control-input" id="is_auto-login-btn" checked aria-selected="false">
+                                    <label class="custom-control-label" for="is_auto-login-btn"><b>Auto complete login</b></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2 auto-login-container">
+                            <div class="col-6">
+                                <input type="text" class="form-control" id="cvs-username" placeholder="Username" aria-label="Username">
+                            </div>
+                            <div class="col-6">
+                                <input type="password" class="form-control" id="cvs-password" placeholder="Password" aria-label="Password">
+                            </div>
+                        </div>
+                        <div class="row mt-2 auto-login-container">
+                            <div class="col-12">
+                                <div id="security-questions" style="padding-right: 12px">
+                                    <strong>Security Questions</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2 auto-login-container text-center">
+                            <div class="col-12">
+                                <button class="btn btn-success" id="save-login-dets-btn">SAVE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="container no-popup-show">
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="shadow-lg p-3 bg-white rounded">
+                        <div class="row text-center">
+                            <div class="col-12 text-uppercase">
+                                <h5 style="background: #ffac81" class="p-2">&#9881; Appointment Preferences &#9881;</h5>
+                            </div>
+                        </div>
+                        <div class="row mt-2 text-center">
+                            <div class="col-12 sub-heading">
+                                <strong>Preferred Visa Appointment Calendar</strong>
+                            </div>
+                        </div>
+                        <div class="row mt-2 text-center">
+                            <div class="form-group col-6">
+                                <label for="slot-start-date">Preferred Start Date</label>
+                                <input type="date" class="form-control" id="slot-start-date" required="">
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="slot-end-date">Preferred End Date</label>
+                                <input type="date" class="form-control" id="slot-end-date" required="">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3 text-center">
+                            <div class="col-12 sub-heading loc-ofc">
+                                <strong>Preferred OFC Location</strong>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12" id="preferred-ofc-location-container">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3 text-center">
+                            <div class="col-12 sub-heading loc-ca">
+                                <strong>Preferred CA Location</strong>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12" id="preferred-ca-location-container">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3 text-center">
+                            <div class="col-12">
+                                <button class="btn btn-success" id="save-slot-preferences-btn">SAVE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="container no-popup-show">
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="shadow-lg p-3 bg-white rounded">
+                        <div class="row text-center">
+                            <div class="col-12 text-uppercase">
+                                <h5 style="background: #ffac81" class="p-2">&#9881; User Preferences Options &#9881;</h5>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div class="custom-control custom-switch" title="Shows all dates available on the appointment page">
+                                    <input type="checkbox" class="custom-control-input" id="is_display-slots-btn" checked aria-selected="true">
+                                    <label class="custom-control-label" for="is_display-slots-btn" ><b>Display overview</b> of available slots</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div class="custom-control custom-switch" title="Selects the earliest time slot on the appointment page">
+                                    <input type="checkbox" class="custom-control-input" id="is_sel-1st-slot-btn" checked aria-selected="true">
+                                    <label class="custom-control-label" for="is_sel-1st-slot-btn"><b>Auto-Select</b> the earliest time-slot</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="navbar">
+            <div class="container">
+                <div class="row text-center justify-content-center" id="chrome-rating">
+                    <div class="col-12">
+                        Like us? please rate &#x2B50;&#x2B50;&#x2B50;&#x2B50;&#x2B50; for the <a href="https://chrome.google.com/webstore/detail/check-us-visa-slots/beepaenfejnphdgnkmccjcfiieihhogl" rel='noreferrer' target="_blank"> chrome extension</a>
+                    </div>
+                </div>
+                <div class="row text-center justify-content-center" id="google-award">
+                    <div class="col-12">
+                        &#127942; WE ARE &#127942;<br>
+                        <a href="https://blog.google/products/chrome/our-favorite-chrome-extensions-of-2022/#:~:text=Check%20US%20Visa%20Slots%20provides%20the%20latest%20U.S.%20visa%20appointments%20availability%20in%20India%20to%20overcome%20a%20challenge%20that%20affects%205.5%20million%20U.S.%20visa%2Dseekers%20a%20year">Google's Favourite Chrome Extensions of 2022</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <script src="js/popup.js"></script>
+    </body>
+</html>

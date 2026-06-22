@@ -1,0 +1,22 @@
+#checkvisaslot-iframe {
+    position: fixed !important;
+    animation-duration: 0.5s !important;
+    animation-timing-function: ease-in-out !important;
+    animation-fill-mode: forwards !important;
+    top: 1% !important;
+    box-shadow: rgba(0, 0, 0, 0.12) 4px 2px 12px 0px !important;
+    width: 450px !important;
+    height: 98% !important;
+    display: block !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: rgba(155, 155, 155, 0.18) !important;
+    border-image: initial !important;
+    border-radius: 8px !important;
+    transition: all 1s ease 0s !important;
+    background-color: white !important;
+}
+
+.checkvisaslot-iframe {
+    right: -450px !important;
+}

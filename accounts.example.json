@@ -1,0 +1,14 @@
+[
+  {
+    "customer_name": "example_customer",
+    "username": "",
+    "password": "",
+    "contributionCities": ["NEW DELHI", "MUMBAI", "HYDERABAD"],
+    "ofcCities": ["NEW DELHI", "MUMBAI", "HYDERABAD"],
+    "security_questions": {
+      "favorite food": "",
+      "first car": "",
+      "childhood hero": ""
+    }
+  }
+]

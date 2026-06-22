@@ -1,0 +1,10 @@
+{
+  "dwell_seconds": 12,
+  "cycles": 0,
+  "max_rotations": 20,
+  "cooldown_minutes": 60,
+  "min_gap_seconds": 15,
+  "max_gap_seconds": 20,
+  "browser_exe": "",
+  "extension_path": "extensions/checkvisaslots"
+}

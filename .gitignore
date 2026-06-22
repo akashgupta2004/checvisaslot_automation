@@ -1,0 +1,43 @@
+# ── Secrets & user config ──
+accounts.json
+settings.json
+.env
+
+# ── Runtime data ──
+profiles/
+state/
+logs/
+chrome_profile_*/
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# ── Playwright ──
+ms-playwright/
+
+# ── OS junk ──
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Screenshots / debug artifacts ──
+*.png
+error_*.png
+login_failed_*.png
+security_question_failed_*.png
+
+# ── Lock files (optional — remove if you want to pin deps) ──
+uv.lock

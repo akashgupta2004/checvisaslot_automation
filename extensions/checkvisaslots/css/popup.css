@@ -1,0 +1,210 @@
+* {
+    padding: 0;
+    margin: 0;
+    font-family: monospace;
+}
+
+body {
+  background-color: #f0f8ff;
+  max-width: 450px !important;
+  height: 100vh;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+.from-page {
+  align-items: flex-start;
+}
+
+.header {
+    border-radius: 8px;
+    background-color: white;
+}
+
+.main-view {
+    margin-top: 12px;
+    flex-direction: column;
+    background-image: linear-gradient(315deg, #ffac81 0%, #ff928b 74%);
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+.no-border {
+    border: none;
+    box-shadow: none;
+}
+
+h1 {
+    text-align: center;
+    font-size: larger;
+}
+
+.info-section {
+  margin-top: 15px;
+}
+
+
+.register input {
+    border: 3px;
+    border-radius: 7px;
+    padding: 5px 3px;
+}
+
+.register input:focus {
+    outline: none;
+}
+
+.register input:valid {
+  border: 2px solid #04AA6D;
+}
+
+.register input:invalid {
+  border: 2px dashed red;
+}
+
+.register input:invalid:required {
+  background-image: linear-gradient(to right, pink, lightgreen);
+}
+
+label {
+    margin-bottom: 5px;
+}
+
+.logo {
+    margin: 3px;
+}
+
+.button {
+  background-color: #c2fbd7;
+  border-radius: 100px;
+  box-shadow: rgba(44, 187, 99, .2) 0 -25px 18px -14px inset,rgba(44, 187, 99, .15) 0 1px 2px,rgba(44, 187, 99, .15) 0 2px 4px,rgba(44, 187, 99, .15) 0 4px 8px,rgba(44, 187, 99, .15) 0 8px 16px,rgba(44, 187, 99, .15) 0 16px 32px;
+  color: green;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,Roboto,sans-serif;
+  padding: 7px 20px;
+  text-align: center;
+  text-decoration: none;
+  transition: all 250ms;
+  border: 0;
+  font-size: 16px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.refresh-slots {
+    cursor: pointer;
+}
+
+.button:hover {
+  box-shadow: rgba(44,187,99,.35) 0 -25px 18px -14px inset,rgba(44,187,99,.25) 0 1px 2px,rgba(44,187,99,.25) 0 2px 4px,rgba(44,187,99,.25) 0 4px 8px,rgba(44,187,99,.25) 0 8px 16px,rgba(44,187,99,.25) 0 16px 32px;
+}
+
+.button-dull {
+    color: white;
+    box-shadow: grey;
+    background-color: grey;
+}
+
+.button-dull:hover {
+  box-shadow: grey;
+}
+
+/* Scroll 5 */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+::-webkit-scrollbar-thumb {
+  background-image: linear-gradient(45deg, #00aeff, #a68eff);
+  border-radius: 10px;
+	-webkit-box-shadow: rgba(0,0,0,.12) 0 3px 13px 1px;
+}
+
+
+table th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background-color: #ffac81;
+  text-align: left;
+}
+
+.section-slots-info {
+    margin-top: 1em;
+    display: none
+}
+
+.section-server-alert {
+    margin-top: 1em;
+    margin-bottom: -1em;
+    display: none
+}
+
+.pt-button{
+     z-index: 99;
+     color: #fff;
+     position: relative;
+     font-weight: bold;
+     font-size: 14px;
+     border-radius: 100px;
+     text-decoration: none;
+     padding: 10px 20px;
+     text-transform: uppercase;
+     background: linear-gradient(135deg, #0080005e, #cccccc, #f6575766, #e15fed9c, #000000);
+     background-size: 400% 400%;
+     display: inline-block;
+     transition: all .5s ease;
+     animation: gradient 8s cubic-bezier(0.6, -0.28, 0.74, 0.05) infinite;
+}
+ .pt-button:hover{
+     animation: gradient 8s ease infinite;
+     color: #ffffff;
+     box-shadow: 0 7px 18px 2px rgba(0, 0, 0, 0.25);
+}
+ .pt-button:before {
+     position: absolute;
+     content: "";
+     top: 0;
+     right: 0;
+     bottom: 0;
+     left: 0;
+     background: -webkit-linear-gradient(135deg, #98c87f 0%, #19a0c2 100%);
+     background: -o-linear-gradient(135deg, #98c87f 0%, #19a0c2 100%);
+     background: -ms-linear-gradient(135deg, #98c87f 0%, #19a0c2 100%);
+     background: -moz-linear-gradient(135deg, #98c87f 0%, #19a0c2 100%);
+     background: linear-gradient(315deg, #98c87f 0%, #19a0c2 100%);
+     border-radius: 5px;
+     z-index: -1;
+     transition: opacity 0.5s linear;
+     opacity: 0;
+}
+
+@keyframes gradient{0%{background-position:0% 20%;}50%{background-position:100% 80%;}100%{background-position:0% 20%;}}
+
+#slots-info table th, #slots-info table td:nth-child(2) {text-align: center;}
+#slots-info table th, #slots-info table td {vertical-align: middle;}
+
+/*Toggle button color to green*/
+.custom-control-input:checked~.custom-control-label::before {
+    border-color: #04AA6D;
+    background-color: #04AA6D;
+}
+
+
+.auto-login-container {
+    display: none;
+}
+
+.sub-heading {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.loc-ca {
+    display: none;
+}
