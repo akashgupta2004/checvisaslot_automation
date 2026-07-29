@@ -6,7 +6,10 @@ import socket
 import logging
 import subprocess
 from pathlib import Path
+from dotenv import load_dotenv
 from playwright.async_api import Page, BrowserContext
+
+load_dotenv()
 
 CHROME_EXE = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
@@ -162,7 +165,7 @@ async def connect_to_chrome(playwright, cdp_port: int, log: logging.Logger, hand
     # Hot-load CheckVisaSlots extension access code if not already set
     async def inject_access_code():
         try:
-            target_key = os.getenv("CHECKVISA_ACCESS_CODE", "9EHYC6").strip()
+            target_key = os.getenv("CHECKVISA_ACCESS_CODE", "4XYRAN").strip()
             if not target_key:
                 return
 

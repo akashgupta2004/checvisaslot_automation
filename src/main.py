@@ -9,8 +9,12 @@ import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from src.auth.browser import ensure_chrome_debug_running
+from src.core.round_robin import RoundRobinScheduler
 
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -18,6 +22,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 
 ACCOUNTS_FILE = Path(os.getenv("CHECKVISA_ACCOUNTS_FILE", Path(__file__).parent.parent / "accounts.json"))
+SETTINGS_FILE = Path(os.getenv("CHECKVISA_SETTINGS_FILE", Path(__file__).parent.parent / "settings.json"))
 PROFILE_ROOT = Path(os.getenv("CHECKVISA_PROFILE_ROOT", Path(__file__).parent.parent))
 STATE_DIR = Path(os.getenv("CHECKVISA_STATE_DIR", Path(__file__).parent.parent / "state"))
 PYTHON = sys.executable
@@ -65,6 +70,19 @@ def load_accounts() -> list[dict]:
             order.append(key)
         deduped[key] = account
     return [deduped[key] for key in order]
+
+
+def load_api_keys() -> list[str]:
+    """Load API keys from settings.json. Falls back to ['4XYRAN'] if not configured."""
+    if SETTINGS_FILE.exists():
+        try:
+            settings = json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
+            keys = settings.get("api_keys", [])
+            if isinstance(keys, list) and keys:
+                return [k.strip() for k in keys if k.strip()]
+        except Exception:
+            pass
+    return ["4XYRAN"]
 
 
 def account_cities(account: dict) -> str:
@@ -189,10 +207,14 @@ def contribution_cmd(account: dict, port: int, args: argparse.Namespace, saved_s
     return cmd
 
 
-def run_account(account: dict, args: argparse.Namespace, env: dict) -> None:
+def run_account(account: dict, args: argparse.Namespace, env: dict, api_key: str = "4XYRAN") -> None:
+    """Run a single account's login + contribution cycle with the given API key."""
     customer = account["customer_name"]
     port = BASE_CDP_PORT
     profile_dir = PROFILE_ROOT / f"chrome_profile_{customer}"
+
+    # Set the API key for this session so browser.py picks it up
+    env["CHECKVISA_ACCESS_CODE"] = api_key
 
     kill_port_process(port)
     write_account_state(customer, {
@@ -236,7 +258,7 @@ def run_account(account: dict, args: argparse.Namespace, env: dict) -> None:
         str(profile_dir),
     ]
 
-    log(f"Starting account {customer} on port {port}")
+    log(f"Starting account {customer} on port {port} (key: {api_key[:4]}...)")
     login_proc = start_process(login_cmd, env)
     ready = threading.Event()
     threading.Thread(target=relay_output, args=(login_proc, f"login:{customer}", ready), daemon=True).start()
@@ -268,8 +290,28 @@ def run_account(account: dict, args: argparse.Namespace, env: dict) -> None:
     
     contrib_proc = start_process(contribution_cmd(account, port, args), env)
     threading.Thread(target=relay_output, args=(contrib_proc, f"contrib:{customer}"), daemon=True).start()
-    code = contrib_proc.wait()
+
+    # Enforce session duration: wait for contribution to finish OR session timer to expire
+    session_deadline = time.time() + (args.session_duration_minutes * 60)
+    while contrib_proc.poll() is None:
+        if time.time() >= session_deadline:
+            log(f"Session duration ({args.session_duration_minutes} min) expired for {customer}. Terminating contribution.")
+            try:
+                contrib_proc.terminate()
+            except Exception:
+                pass
+            # Give it a few seconds to clean up
+            try:
+                contrib_proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                try:
+                    contrib_proc.kill()
+                except Exception:
+                    pass
+            break
+        time.sleep(5)
     
+    code = contrib_proc.poll()
     log(f"Contribution runner exited for {customer} with code {code}")
 
     try:
@@ -281,7 +323,7 @@ def run_account(account: dict, args: argparse.Namespace, env: dict) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Sequential contribution scheduler with account cooldown.")
+    parser = argparse.ArgumentParser(description="Round-robin contribution scheduler with API key rotation.")
     parser.add_argument("--dwell-seconds", type=int, default=12)
     parser.add_argument("--max-rotations", type=int, default=20)
     parser.add_argument("--cooldown-seconds", type=int, default=3600)
@@ -289,10 +331,21 @@ def main() -> None:
     parser.add_argument("--min-gap-seconds", type=int, default=15)
     parser.add_argument("--max-gap-seconds", type=int, default=20)
     parser.add_argument("--session-gap-seconds", type=int, default=300, help="Seconds to wait between consecutive account sessions")
+    parser.add_argument("--session-duration-minutes", type=int, default=60, help="Max minutes one account contributes before switching")
+    parser.add_argument("--switch-cooldown-seconds", type=int, default=300, help="Cooldown seconds between account switches")
     args = parser.parse_args()
 
     accounts = load_accounts()
-    log(f"Loaded {len(accounts)} account(s). Max rotations/account={args.max_rotations}, cooldown={args.cooldown_seconds}s")
+    api_keys = load_api_keys()
+    log(f"Loaded {len(accounts)} account(s), {len(api_keys)} API key(s). Session={args.session_duration_minutes}min")
+    log(f"API keys: {', '.join(k[:4] + '...' for k in api_keys)}")
+
+    # Create round-robin scheduler (rotates both accounts and API keys)
+    scheduler = RoundRobinScheduler(accounts, api_keys, STATE_DIR)
+    names = [a["customer_name"] for a in accounts]
+    log(f"Account order: {' → '.join(names)}")
+    log(f"Resuming: account={scheduler.account_order[scheduler.current_account_index]}, "
+        f"key={scheduler.current_api_key[:4]}..., full cycles={scheduler.completed_full_cycles}")
 
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
@@ -309,60 +362,65 @@ def main() -> None:
     signal.signal(signal.SIGTERM, stop)
 
     while not stopped:
-        ran_any = False
-        for account in accounts:
-            if stopped:
-                break
-            customer = account["customer_name"]
-            available_at = cooldown_until.get(customer, 0)
-            if now_ts() < available_at:
-                continue
-
-            ran_any = True
-            code = run_account(account, args, env)
-            
-            if code == 43:
-                log(f"Cloudflare block (Code 43) detected for {customer}. Deleting user session and retrying...")
-                profile_dir = PROFILE_ROOT / f"chrome_profile_{customer}"
-                import shutil
-                try:
-                    shutil.rmtree(profile_dir / "Default" / "Sessions", ignore_errors=True)
-                    shutil.rmtree(profile_dir / "Default" / "Network", ignore_errors=True)
-                except Exception as ex:
-                    log.warning(f"Failed to delete session for {customer}: {ex}")
-                cooldown_until[customer] = now_ts()  # 0 cooldown
-                write_account_state(customer, {
-                    "status": "session_wiped_restarting",
-                    "cooldown_until": ts_text(cooldown_until[customer]),
-                    "max_rotations": args.max_rotations,
-                })
-            else:
-                cooldown_until[customer] = now_ts() + args.cooldown_seconds
-                write_account_state(customer, {
-                    "status": "cooldown",
-                    "cooldown_until": ts_text(cooldown_until[customer]),
-                    "cooldown_seconds": args.cooldown_seconds,
-                    "max_rotations": args.max_rotations,
-                })
-                log(f"{customer} is cooling down until {ts_text(cooldown_until[customer])}")
-
-            # Wait gap between sessions (responsive to stops)
-            if args.session_gap_seconds > 0 and not stopped:
-                log(f"Waiting {args.session_gap_seconds} seconds gap before the next session...")
-                gap_remaining = args.session_gap_seconds
-                while gap_remaining > 0 and not stopped:
-                    sleep_time = min(5, gap_remaining)
-                    time.sleep(sleep_time)
-                    gap_remaining -= sleep_time
-
-        if stopped:
+        account = scheduler.next_account()
+        if account is None:
+            log("No accounts available. Exiting.")
             break
 
-        if not ran_any:
-            next_ready = min(cooldown_until.values()) if cooldown_until else now_ts() + 10
-            sleep_for = max(5, min(60, int(next_ready - now_ts())))
-            log(f"No eligible accounts. Sleeping {sleep_for}s.")
+        customer = account["customer_name"]
+        current_key = scheduler.current_api_key
+        available_at = cooldown_until.get(customer, 0)
+
+        if now_ts() < available_at:
+            sleep_for = max(5, min(60, int(available_at - now_ts())))
+            log(f"{customer} still in cooldown. Sleeping {sleep_for}s.")
             time.sleep(sleep_for)
+            continue
+
+        log(f"=== Round-Robin → '{customer}' | key={current_key[:4]}... "
+            f"(acct {scheduler.current_account_index+1}/{len(scheduler.account_order)}, "
+            f"key {scheduler.current_api_key_index+1}/{len(api_keys)}, "
+            f"cycle {scheduler.completed_full_cycles}) ===")
+
+        code = run_account(account, args, env, api_key=current_key)
+
+        scheduler.mark_session_complete(customer)
+        log(f"Advanced → next: {scheduler.account_order[scheduler.current_account_index]}, "
+            f"key: {scheduler.current_api_key[:4]}..., cycles: {scheduler.completed_full_cycles}")
+
+        if code == 43:
+            log(f"Cloudflare block (Code 43) detected for {customer}. Deleting user session and retrying...")
+            profile_dir = PROFILE_ROOT / f"chrome_profile_{customer}"
+            import shutil
+            try:
+                shutil.rmtree(profile_dir / "Default" / "Sessions", ignore_errors=True)
+                shutil.rmtree(profile_dir / "Default" / "Network", ignore_errors=True)
+            except Exception as ex:
+                log(f"WARNING Failed to delete session for {customer}: {ex}")
+            cooldown_until[customer] = now_ts()
+            write_account_state(customer, {
+                "status": "session_wiped_restarting",
+                "cooldown_until": ts_text(cooldown_until[customer]),
+                "max_rotations": args.max_rotations,
+            })
+        else:
+            cooldown_until[customer] = now_ts() + args.cooldown_seconds
+            write_account_state(customer, {
+                "status": "cooldown",
+                "cooldown_until": ts_text(cooldown_until[customer]),
+                "cooldown_seconds": args.cooldown_seconds,
+                "max_rotations": args.max_rotations,
+            })
+            log(f"{customer} cooling down until {ts_text(cooldown_until[customer])}")
+
+        switch_cooldown = args.switch_cooldown_seconds
+        if switch_cooldown > 0 and not stopped:
+            log(f"Switch cooldown: waiting {switch_cooldown}s...")
+            gap_remaining = switch_cooldown
+            while gap_remaining > 0 and not stopped:
+                sleep_time = min(5, gap_remaining)
+                time.sleep(sleep_time)
+                gap_remaining -= sleep_time
 
 
 if __name__ == "__main__":

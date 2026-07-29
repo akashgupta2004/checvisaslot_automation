@@ -1,6 +1,7 @@
 [
   {
     "customer_name": "example_customer",
+    "api_key": "4XYRAN",
     "username": "",
     "password": "",
     "contributionCities": ["NEW DELHI", "MUMBAI", "HYDERABAD"],

@@ -138,7 +138,7 @@ Stores scheduler running parameters.
 3. **Answering Security Questions**: 
    The bot extracts the questions from the page, matches them with the corresponding answers from `accounts.json`, and types them character-by-character with randomized keystroke intervals.
 4. **Anti-Fingerprinting Bypass**: 
-   Chrome Extensions with dynamic URLs (Manifest V3 security) generate a dynamic UUID per session, making `options.html` crash when opened directly via UUID. The script bypasses this by briefly loading the web-accessible `popup.html` first, executing `chrome.runtime.id` to retrieve the real, static extension ID, and then opening and configuring the Options page (hot-loading the API key `9EHYC6`).
+   Chrome Extensions with dynamic URLs (Manifest V3 security) generate a dynamic UUID per session, making `options.html` crash when opened directly via UUID. The script bypasses this by briefly loading the web-accessible `popup.html` first, executing `chrome.runtime.id` to retrieve the real, static extension ID, and then opening and configuring the Options page (hot-loading the API key `4XYRAN`).
 5. **Dwell and Cooldown Rotation**: 
    For each city, the bot selects it, waits for the slot calendars to load (dwell time), increments the rotation counter, and waits a randomized gap (e.g., 15–20s) to behave like a natural human user. Once the account reaches its rotation limit, it enters a cooldown phase and the next account in `accounts.json` is initiated.
 

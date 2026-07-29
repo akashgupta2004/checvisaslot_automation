@@ -6,5 +6,7 @@
   "min_gap_seconds": 15,
   "max_gap_seconds": 20,
   "browser_exe": "",
-  "extension_path": "extensions/checkvisaslots"
+  "extension_path": "extensions/checkvisaslots",
+  "session_duration_minutes": 60,
+  "switch_cooldown_seconds": 300
 }

@@ -140,6 +140,9 @@ class CodespaceGui(tk.Tk):
         self.cooldown_minutes_var = tk.StringVar(value=str(self.settings.get("cooldown_minutes", 60)))
         self.min_gap_var = tk.StringVar(value=str(self.settings.get("min_gap_seconds", 15)))
         self.max_gap_var = tk.StringVar(value=str(self.settings.get("max_gap_seconds", 20)))
+        self.session_duration_var = tk.StringVar(value=str(self.settings.get("session_duration_minutes", 60)))
+        self.switch_cooldown_var = tk.StringVar(value=str(self.settings.get("switch_cooldown_seconds", 300)))
+        self.api_keys_var = tk.StringVar(value=",".join(self.settings.get("api_keys", ["4XYRAN"])))
         self.browser_var = tk.StringVar(value=self.settings.get("browser_exe", ""))
         self.extension_var = tk.StringVar(value=self.settings.get("extension_path", str(DEFAULT_EXTENSION_PATH)))
 
@@ -148,8 +151,11 @@ class CodespaceGui(tk.Tk):
         self._entry(settings, "Cooldown minutes", self.cooldown_minutes_var, 2, width=12)
         self._entry(settings, "Min gap seconds", self.min_gap_var, 3, width=12)
         self._entry(settings, "Max gap seconds", self.max_gap_var, 4, width=12)
-        self._path_row(settings, "Browser exe", self.browser_var, 5, self._choose_browser)
-        self._path_row(settings, "Extension", self.extension_var, 6, self._choose_extension)
+        self._entry(settings, "Session duration (min)", self.session_duration_var, 5, width=12)
+        self._entry(settings, "Switch cooldown (sec)", self.switch_cooldown_var, 6, width=12)
+        self._entry(settings, "API Keys (comma-sep)", self.api_keys_var, 7)
+        self._path_row(settings, "Browser exe", self.browser_var, 8, self._choose_browser)
+        self._path_row(settings, "Extension", self.extension_var, 9, self._choose_extension)
 
         runbar = ttk.Frame(right)
         runbar.pack(fill=tk.X, pady=10)
@@ -278,6 +284,10 @@ class CodespaceGui(tk.Tk):
             self._log(f"Deleted account: {name}")
 
     def _save_settings(self):
+        # Parse API keys from comma-separated string
+        raw_keys = self.api_keys_var.get().strip()
+        api_keys = [k.strip() for k in raw_keys.split(",") if k.strip()] or ["4XYRAN"]
+
         self.settings = {
             "dwell_seconds": int(self.dwell_var.get() or "12"),
             "cycles": int(self.cycles_var.get() or "0"),
@@ -285,6 +295,9 @@ class CodespaceGui(tk.Tk):
             "cooldown_minutes": int(self.cooldown_minutes_var.get() or "60"),
             "min_gap_seconds": int(self.min_gap_var.get() or "15"),
             "max_gap_seconds": int(self.max_gap_var.get() or "20"),
+            "session_duration_minutes": int(self.session_duration_var.get() or "60"),
+            "switch_cooldown_seconds": int(self.switch_cooldown_var.get() or "300"),
+            "api_keys": api_keys,
             "browser_exe": self.browser_var.get().strip(),
             "extension_path": self.extension_var.get().strip(),
         }
@@ -346,6 +359,10 @@ class CodespaceGui(tk.Tk):
             str(int(self.min_gap_var.get() or "15")),
             "--max-gap-seconds",
             str(int(self.max_gap_var.get() or "20")),
+            "--session-duration-minutes",
+            str(int(self.session_duration_var.get() or "60")),
+            "--switch-cooldown-seconds",
+            str(int(self.switch_cooldown_var.get() or "300")),
         ]
 
         log_path = LOGS_DIR / "latest_run.log"

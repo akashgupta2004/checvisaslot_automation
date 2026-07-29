@@ -160,7 +160,28 @@ async def go_to_ofc_page(page: Page, customer: str) -> bool:
 
         if not clicked:
             log.info("Schedule link not found on landing page; navigating directly to OFC page.")
-            await page.goto(OFC_URL, wait_until="domcontentloaded", timeout=120_000)
+            try:
+                await page.goto(OFC_URL, wait_until="domcontentloaded", timeout=120_000)
+            except Exception as nav_err:
+                log.warning(f"Direct OFC navigation interrupted ({nav_err.__class__.__name__}); waiting for page to settle...")
+                await asyncio.sleep(3)
+                # If we landed on the profile page, try to complete it or navigate past it
+                if "/profile" in page.url.lower():
+                    log.info("Landed on profile page; attempting to proceed...")
+                    for btn_sel in ["button:has-text('Continue')", "button:has-text('Save')", "input[type='submit']", "a:has-text('Continue')"]:
+                        try:
+                            if await page.locator(btn_sel).count() > 0:
+                                await page.locator(btn_sel).first.click()
+                                log.info(f"Clicked profile button: {btn_sel}")
+                                await asyncio.sleep(3)
+                                break
+                        except Exception:
+                            continue
+                    # Try OFC navigation again
+                    try:
+                        await page.goto(OFC_URL, wait_until="domcontentloaded", timeout=60_000)
+                    except Exception:
+                        log.warning("Second OFC navigation also interrupted; continuing to check page state...")
 
     await _wait_for_page_idle(page)
 
