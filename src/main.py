@@ -11,7 +11,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 from src.auth.browser import ensure_chrome_debug_running
 from src.core.round_robin import RoundRobinScheduler

@@ -9,7 +9,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from playwright.async_api import Page, BrowserContext
 
-load_dotenv()
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 CHROME_EXE = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
