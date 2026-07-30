@@ -113,7 +113,7 @@ Stores account credentials, target cities, and security questions.
 > The keys in `"security_questions"` (e.g., `"food"`, `"car"`) are case-insensitive substrings matched against the question label text displayed on the portal.
 
 ### 2. `settings.json`
-Stores scheduler running parameters.
+Stores global scheduler running parameters and the pool of API keys.
 ```json
 {
   "dwell_seconds": 12,
@@ -122,6 +122,9 @@ Stores scheduler running parameters.
   "cooldown_minutes": 60,
   "min_gap_seconds": 15,
   "max_gap_seconds": 20,
+  "session_duration_minutes": 60,
+  "switch_cooldown_seconds": 300,
+  "api_keys": ["KEY1", "KEY2"],
   "browser_exe": "",
   "extension_path": "C:\\Users\\...\\checkvisastart_codespace\\extensions\\checkvisaslots"
 }
@@ -131,20 +134,22 @@ Stores scheduler running parameters.
 
 ## 🧠 Under The Hood: How it Works
 
-1. **Session Reuse Optimization**: 
+1. **Two-Level Round-Robin Rotation**:
+   The bot automatically loops through all accounts using the first API key (each account runs for the `session_duration_minutes`), and once all accounts have finished, it automatically cycles to the next API key in the list and repeats. State is persistently saved so the bot always remembers exactly where it left off.
+2. **Session Reuse Optimization**: 
    When the scheduler starts an account, it checks if a saved profile exists in `profiles/chrome_profile_<customer>`. If found, it opens Chrome directly to the OFC page. If the session is still authenticated, it skips the login stage entirely.
-2. **Cloudflare Waiting Room Handling**: 
-   The script checks for Cloudflare challenge checkmarks or Turnstile wrappers and clicks them automatically using human-like mouse movements.
-3. **Answering Security Questions**: 
+3. **Cloudflare Waiting Room & Timeout Handling**: 
+   The script checks for Cloudflare challenge checkmarks or Turnstile wrappers and clicks them automatically using human-like mouse movements. It also automatically detects server overloads (e.g., Error 524 Timeouts) and cleanly advances to the next account to prevent hanging.
+4. **Answering Security Questions**: 
    The bot extracts the questions from the page, matches them with the corresponding answers from `accounts.json`, and types them character-by-character with randomized keystroke intervals.
-4. **Anti-Fingerprinting Bypass**: 
-   Chrome Extensions with dynamic URLs (Manifest V3 security) generate a dynamic UUID per session, making `options.html` crash when opened directly via UUID. The script bypasses this by briefly loading the web-accessible `popup.html` first, executing `chrome.runtime.id` to retrieve the real, static extension ID, and then opening and configuring the Options page (hot-loading the API key `4XYRAN`).
-5. **Dwell and Cooldown Rotation**: 
-   For each city, the bot selects it, waits for the slot calendars to load (dwell time), increments the rotation counter, and waits a randomized gap (e.g., 15–20s) to behave like a natural human user. Once the account reaches its rotation limit, it enters a cooldown phase and the next account in `accounts.json` is initiated.
+5. **Anti-Fingerprinting Bypass**: 
+   Chrome Extensions with dynamic URLs (Manifest V3 security) generate a dynamic UUID per session, making `options.html` crash when opened directly via UUID. The script bypasses this by briefly loading the web-accessible `popup.html` first, executing `chrome.runtime.id` to retrieve the real, static extension ID, and then opening and configuring the Options page (hot-loading the active API key).
+6. **Dwell and Cooldown Rotation**: 
+   For each city, the bot selects it, waits for the slot calendars to load (dwell time), increments the rotation counter, and waits a randomized gap (e.g., 15–20s) to behave like a natural human user. Once the account reaches its rotation limit, it enters a cooldown phase and the next account in `accounts.json` is initiated after the `switch_cooldown_seconds` pause.
 
 ---
 
 ## 📈 Logs & State Monitoring
 
-* **Logs**: Detailed execution logs for the subprocesses are written to `logs/latest_run.log`.
-* **State**: Current status (e.g., `city_checked`, `cooldown`, `starting`, `rotation_limit_reached`) is written in JSON format to `state/scheduler_state_<customer>.json` and `state/contribution_state_<customer>.json`. These are polled by the GUI to update progress.
+* **Logs**: Detailed execution logs for the subprocesses are automatically saved as timestamped files in the `logs/` directory (e.g., `run_20260730_143000.log`), providing a persistent history of all activity. You can access these quickly via the **"Open Logs"** button in the GUI.
+* **State**: Current status (e.g., `current_account_index`, `current_api_key_index`) is written in JSON format to `state/round_robin_state.json`. These are polled by the GUI to update progress and ensure safe restarts.
