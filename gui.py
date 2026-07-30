@@ -4,6 +4,7 @@ import queue
 import subprocess
 import sys
 import threading
+from datetime import datetime
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
@@ -163,6 +164,7 @@ class CodespaceGui(tk.Tk):
         ttk.Button(runbar, text="Start Contribution", command=self._start).pack(side=tk.LEFT, padx=6)
         ttk.Button(runbar, text="Stop", command=self._stop).pack(side=tk.LEFT, padx=6)
         ttk.Button(runbar, text="Open Folder", command=self._open_folder).pack(side=tk.LEFT, padx=6)
+        ttk.Button(runbar, text="Open Logs", command=self._open_logs).pack(side=tk.LEFT, padx=6)
 
         note = (
             "Mode: contribution-only. The bot will not click submit. "
@@ -317,6 +319,9 @@ class CodespaceGui(tk.Tk):
     def _open_folder(self):
         os.startfile(str(CODESPACE_DIR))
 
+    def _open_logs(self):
+        os.startfile(str(LOGS_DIR))
+
     def _start(self):
         if self.proc and self.proc.poll() is None:
             messagebox.showinfo("Already running", "The contribution process is already running.")
@@ -365,8 +370,11 @@ class CodespaceGui(tk.Tk):
             str(int(self.switch_cooldown_var.get() or "300")),
         ]
 
-        log_path = LOGS_DIR / "latest_run.log"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_path = LOGS_DIR / f"run_{timestamp}.log"
         self._log(f"Starting: {' '.join(cmd)}")
+        self._log(f"Logging to: {log_path}")
+        
         self.proc = subprocess.Popen(
             cmd,
             cwd=str(REPO_ROOT),
