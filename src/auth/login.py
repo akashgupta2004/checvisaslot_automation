@@ -35,8 +35,17 @@ async def wait_for_waiting_room(
             await asyncio.sleep(2)
             continue
             
-        if "sorry, you have been blocked" in html.lower() or "why have i been blocked" in html.lower() or "unable to access" in html.lower():
-            log.error("Cloudflare blocked the page (Error 1020).")
+        html_lower = html.lower()
+        title_lower = title.lower()
+        if (
+            "sorry, you have been blocked" in html_lower 
+            or "why have i been blocked" in html_lower 
+            or "unable to access" in html_lower
+            or "error code 524" in html_lower
+            or "a timeout occurred" in html_lower
+            or "524" in title_lower
+        ):
+            log.error("Cloudflare blocked the page (Error 1020/524).")
             raise CloudflareBlockException("Cloudflare Blocked Page Detected")
         
         in_queue = any(kw in html.lower() for kw in [
