@@ -101,6 +101,7 @@ Stores account credentials, target cities, and security questions.
       "CHENNAI",
       "KOLKATA"
     ],
+    "is_reschedule": false,
     "security_questions": {
       "food": "Pizza",
       "car": "Toyota",
@@ -110,7 +111,8 @@ Stores account credentials, target cities, and security questions.
 ]
 ```
 > [!NOTE]
-> The keys in `"security_questions"` (e.g., `"food"`, `"car"`) are case-insensitive substrings matched against the question label text displayed on the portal.
+> * Set `"is_reschedule": true` for accounts that already have a booked appointment. The bot will automatically check for dates via the Reschedule portal instead of the new appointment flow.
+> * The keys in `"security_questions"` (e.g., `"food"`, `"car"`) are case-insensitive substrings matched against the question label text displayed on the portal.
 
 ### 2. `settings.json`
 Stores global scheduler running parameters and the pool of API keys.
@@ -146,6 +148,8 @@ Stores global scheduler running parameters and the pool of API keys.
    Chrome Extensions with dynamic URLs (Manifest V3 security) generate a dynamic UUID per session, making `options.html` crash when opened directly via UUID. The script bypasses this by briefly loading the web-accessible `popup.html` first, executing `chrome.runtime.id` to retrieve the real, static extension ID, and then opening and configuring the Options page (hot-loading the active API key).
 6. **Dwell and Cooldown Rotation**: 
    For each city, the bot selects it, waits for the slot calendars to load (dwell time), increments the rotation counter, and waits a randomized gap (e.g., 15–20s) to behave like a natural human user. Once the account reaches its rotation limit, it enters a cooldown phase and the next account in `accounts.json` is initiated after the `switch_cooldown_seconds` pause.
+7. **Reschedule Mode (Smart Routing)**:
+   Accounts can be individually flagged for "Reschedule Mode". For accounts that already have a booked appointment, the bot automatically targets the "Reschedule Appointment" flow (using the special `?reschedule=true` parameter) instead of attempting to create a new appointment, preventing accidental errors.
 
 ---
 

@@ -148,7 +148,8 @@ async def go_to_ofc_page(page: Page, customer: str) -> bool:
             return False
 
         clicked = False
-        for selector in ["#continue_application", "a[href*='/ofc-schedule']", "a:has-text('Schedule Appointment')"]:
+        selectors = ["#reschedule_appointment", "a[href*='reschedule=true']", "a:has-text('Reschedule Appointment')"] if "reschedule=true" in OFC_URL else ["#continue_application", "a[href*='/ofc-schedule']", "a:has-text('Schedule Appointment')"]
+        for selector in selectors:
             try:
                 if await page.locator(selector).count() > 0:
                     await page.locator(selector).first.click()
@@ -368,7 +369,12 @@ def main() -> None:
     parser.add_argument("--max-gap-seconds", type=int, default=20)
     parser.add_argument("--saved-session-only", action="store_true", help="Only use existing session; exit if OFC is not already accessible")
     parser.add_argument("--saved-session-wait-seconds", type=int, default=600, help="Seconds to wait for queue/waiting room during saved-session check")
+    parser.add_argument("--reschedule", action="store_true", help="Run in reschedule mode")
     args = parser.parse_args()
+
+    global OFC_URL
+    if args.reschedule:
+        OFC_URL = "https://www.usvisascheduling.com/en-US/ofc-schedule/?reschedule=true"
 
     cities = parse_cities(args.cities)
     log.info(f"Contribution-only mode for {args.customer}: {', '.join(cities)}")

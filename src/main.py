@@ -205,6 +205,8 @@ def contribution_cmd(account: dict, port: int, args: argparse.Namespace, saved_s
     ]
     if saved_session_only:
         cmd.append("--saved-session-only")
+    if account.get("is_reschedule"):
+        cmd.append("--reschedule")
     return cmd
 
 
@@ -227,7 +229,9 @@ def run_account(account: dict, args: argparse.Namespace, env: dict, api_key: str
 
     if has_saved_profile(profile_dir):
         log(f"Saved profile found for {customer}; trying direct OFC contribution without login.")
-        ensure_chrome_debug_running(port, str(profile_dir), SchedulerBrowserLog(), start_url=OFC_URL)
+        is_reschedule = account.get("is_reschedule", False)
+        start_url = "https://www.usvisascheduling.com/en-US/ofc-schedule/?reschedule=true" if is_reschedule else OFC_URL
+        ensure_chrome_debug_running(port, str(profile_dir), SchedulerBrowserLog(), start_url=start_url)
         write_account_state(customer, {
             "status": "checking_saved_session",
             "rotation_count": 0,

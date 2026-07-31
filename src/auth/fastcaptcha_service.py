@@ -2,7 +2,7 @@
 FastCaptcha API Service - Automated CAPTCHA solving integration.
 
 This module provides integration with FastCaptcha API for automatically
-solving CAPTCHAs encountered during visa booking automation. zui
+solving CAPTCHAs encountered during visa booking automation. zuie
 
 API Documentation: https://fastcaptcha.io/api/docs
 """

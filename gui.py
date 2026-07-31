@@ -110,12 +110,14 @@ class CodespaceGui(tk.Tk):
         self.username_var = tk.StringVar()
         self.password_var = tk.StringVar()
         self.cities_var = tk.StringVar(value="NEW DELHI,MUMBAI,HYDERABAD,CHENNAI,KOLKATA")
+        self.account_reschedule_var = tk.BooleanVar(value=False)
         self.q_vars = [(tk.StringVar(), tk.StringVar()) for _ in range(3)]
 
         self._entry(form, "Customer", self.customer_var, 0)
         self._entry(form, "Username", self.username_var, 1)
         self._entry(form, "Password", self.password_var, 2, show="*")
         self._entry(form, "Cities", self.cities_var, 3)
+        ttk.Checkbutton(form, text="Reschedule Mode (check booked appointments)", variable=self.account_reschedule_var).grid(row=4, column=0, columnspan=2, sticky="w", padx=4, pady=(2, 6))
 
         qbox = ttk.LabelFrame(left, text="Security Questions")
         qbox.pack(fill=tk.X, pady=6)
@@ -212,6 +214,7 @@ class CodespaceGui(tk.Tk):
         self.username_var.set(account.get("username", ""))
         self.password_var.set(account.get("password", ""))
         self.cities_var.set(",".join(account.get("contributionCities") or account.get("ofcCities") or ["ANY"]))
+        self.account_reschedule_var.set(account.get("is_reschedule", False))
         questions = list((account.get("security_questions") or {}).items())
         for i, (qvar, avar) in enumerate(self.q_vars):
             qvar.set(questions[i][0] if i < len(questions) else "")
@@ -221,6 +224,7 @@ class CodespaceGui(tk.Tk):
         for var in [self.customer_var, self.username_var, self.password_var]:
             var.set("")
         self.cities_var.set("NEW DELHI,MUMBAI,HYDERABAD,CHENNAI,KOLKATA")
+        self.account_reschedule_var.set(False)
         for qvar, avar in self.q_vars:
             qvar.set("")
             avar.set("")
@@ -246,6 +250,7 @@ class CodespaceGui(tk.Tk):
             "password": password,
             "contributionCities": split_cities(self.cities_var.get()),
             "ofcCities": split_cities(self.cities_var.get()),
+            "is_reschedule": self.account_reschedule_var.get(),
             "security_questions": questions,
         }
 
